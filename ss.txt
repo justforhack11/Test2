@@ -1,0 +1,4 @@
+#pragma comment(linker,"/export:curl_easy_setopt=gup.curl_easy_setopt,@14")
+#pragma comment(linker,"/export:curl_easy_cleanup=gup.curl_easy_cleanup,@1") // checked
+#pragma comment(linker,"/export:curl_easy_perform=gup.curl_easy_perform,@10")
+
